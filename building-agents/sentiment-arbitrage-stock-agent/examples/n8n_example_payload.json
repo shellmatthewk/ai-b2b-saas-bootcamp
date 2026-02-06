@@ -1,0 +1,38 @@
+{
+  "description": "Example payload for n8n integration with the trading signal service",
+  "endpoint": "POST http://localhost:5000/api/signal",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "ticker": "AAPL",
+    "reddit_posts": [
+      "Apple's new Vision Pro is revolutionary! Game changer for tech.",
+      "AAPL crushing earnings again. Consistent performer.",
+      "Just bought more Apple stock. Bullish long term.",
+      "iPhone demand is insane this quarter",
+      "Warren Buffett knows what he's doing with Apple"
+    ]
+  },
+  "expected_response": {
+    "signal": "BUY | HOLD | NEUTRAL",
+    "ticker": "AAPL",
+    "sentiment_score": 0.85,
+    "rsi": 28.5,
+    "volume": 85234000,
+    "price": 178.45,
+    "reason": "Detailed explanation of the signal",
+    "timestamp": "2026-02-05T12:34:56.789Z",
+    "status": "success",
+    "metadata": {},
+    "errors": []
+  },
+  "n8n_workflow_tips": [
+    "1. Use Reddit node to fetch recent comments from r/stocks or r/wallstreetbets",
+    "2. Filter comments to extract text content into an array",
+    "3. Use HTTP Request node to call this API with ticker and posts",
+    "4. Parse response and route based on signal type (BUY/HOLD/NEUTRAL)",
+    "5. For BUY signals, trigger notification or execute trade action",
+    "6. Log all signals to a database or spreadsheet for tracking"
+  ]
+}
