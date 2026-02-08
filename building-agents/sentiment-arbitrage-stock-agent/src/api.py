@@ -10,6 +10,7 @@ from typing import Dict
 import logging
 import os
 from dotenv import load_dotenv
+import yfinance as yf
 
 from src.signal_generator import SignalGenerator
 
@@ -148,6 +149,48 @@ def get_configuration():
         "rsi_period": signal_generator.technical_calculator.rsi_period,
         "service_version": os.getenv("SERVICE_VERSION", "1.0.0")
     }), 200
+
+
+@app.route("/api/validate/<ticker>", methods=["GET"])
+def validate_ticker(ticker):
+    """
+    Validate if a ticker symbol exists in yfinance.
+
+    Use this as a filter node in n8n before calling /api/signal.
+
+    Args:
+        ticker: Stock ticker symbol (e.g., AAPL, TSLA, MSFT)
+
+    Returns:
+        200 with {"valid": True, "ticker": "AAPL", "price": 150.00} if valid
+        404 with {"valid": False, "ticker": "XYZ"} if invalid
+    """
+    ticker = ticker.strip().upper()
+    logger.info(f"Validating ticker: {ticker}")
+
+    try:
+        stock = yf.Ticker(ticker)
+        # Use history with short period - more reliable than fast_info
+        hist = stock.history(period="5d")
+
+        if not hist.empty and len(hist) > 0:
+            return jsonify({
+                "valid": True,
+                "ticker": ticker,
+            }), 200
+        else:
+            return jsonify({
+                "valid": False,
+                "ticker": ticker,
+            }), 404
+
+    except Exception as e:
+        logger.warning(f"Ticker validation failed for {ticker}: {e}")
+        return jsonify({
+            "valid": False,
+            "ticker": ticker,
+            "reason": str(e)
+        }), 404
 
 
 @app.errorhandler(404)
